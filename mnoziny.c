@@ -36,23 +36,17 @@ void free_array(MNOZINA* arr)
 //    return t;
 //}
 
-MNOZINA* copy_arr(MNOZINA* arr)
-{
-    int i;
-    MNOZINA* copySet = constructor();
-    if (copySet == NULL) {
-        return 0;
+int contains(MNOZINA* set, int element) {
+	int i;
+    for (i = 0; i < set->n; i++) {
+        if (set->set[i] == element) {
+            return 1;  // Cislo nebolo najdene
+        }
     }
-    copySet->set = (int*)malloc(arr->n * sizeof(int));
-    copySet->n = arr->n;
-    for (i = 0; i < arr->n; i++)
-    {
-        copySet->set[i] = arr->set[i];
-    }
-    return(copySet);
+    return 0;  // Cislo nebolo najdene
 }
 
-MNOZINA* intersection(MNOZINA* set1, MNOZINA* set2) {
+MNOZINA* intersection(MNOZINA* set1, MNOZINA* set2) {  //algoritmus zlucenia pre prienik
     MNOZINA* intersec = constructor();
     if (intersec == NULL) {
         return NULL;
@@ -63,31 +57,27 @@ MNOZINA* intersection(MNOZINA* set1, MNOZINA* set2) {
         return NULL;
     }
     int k1 = 0;
-    for (int i = 0; i < set1->n; i++) {
-        int t = 0;
-        for (int j = 0; j < set2->n; j++) {
-            if (set1->set[i] == set2->set[j]) {
-                int duplicate = 0;
-                for (int k = 0; k < k1; k++) {
-                    if (intersec->set[k] == set1->set[i]) {
-                        duplicate = 1;
-                        break;
-                    }
-                }
-                if (duplicate == 0) {
-                    intersec->set[k1] = set1->set[i];
-                    k1++;
-                }
-                t = 1;
-                break;
+    int i = 0, j = 0;
+    while (i < set1->n && j < set2->n) {
+        if (set1->set[i] < set2->set[j]) {
+            i++;
+        }
+        else if (set1->set[i] > set2->set[j]) {
+            j++;
+        }
+        else {
+            if (k1 == 0 || intersec->set[k1 - 1] != set1->set[i]) {
+                intersec->set[k1] = set1->set[i];
+                k1++;
             }
+            i++;
+            j++;
         }
     }
     intersec->n = k1;
     return intersec;
 }
-
-MNOZINA* unions(MNOZINA* set1, MNOZINA* set2) {
+MNOZINA* unions(MNOZINA* set1, MNOZINA* set2) { //algoritmus zlucenia pre zjednotenie
     MNOZINA* unio = constructor();
     if (unio == NULL) {
         return NULL;
@@ -98,91 +88,88 @@ MNOZINA* unions(MNOZINA* set1, MNOZINA* set2) {
         return NULL;
     }
     int k2 = 0;
-    for (int i = 0; i < set1->n; i++) {
-        int duplicate = 0;
-        for (int j = 0; j < k2; j++) {
-            if (set1->set[i] == unio->set[j]) {
-                duplicate = 1;
-                break;
+    int i = 0, j = 0;
+    while (i < set1->n && j < set2->n) {
+        if (set1->set[i] < set2->set[j]) {
+            if (k2 == 0 || unio->set[k2 - 1] != set1->set[i]) {
+                unio->set[k2] = set1->set[i];
+                k2++;
             }
+            i++;
         }
-        if (duplicate == 0) {
+        else if (set1->set[i] > set2->set[j]) {
+            if (k2 == 0 || unio->set[k2 - 1] != set2->set[j]) {
+                unio->set[k2] = set2->set[j];
+                k2++;
+            }
+            j++;
+        }
+        else {
+            if (k2 == 0 || unio->set[k2 - 1] != set1->set[i]) {
+                unio->set[k2] = set1->set[i];
+                k2++;
+            }
+            i++;
+            j++;
+        }
+    }
+    while (i < set1->n) {
+        if (k2 == 0 || unio->set[k2 - 1] != set1->set[i]) {
             unio->set[k2] = set1->set[i];
             k2++;
         }
+        i++;
     }
-    for (int i = 0; i < set2->n; i++) {
-        int duplicate = 0;
-        for (int j = 0; j < k2; j++) {
-            if (set2->set[i] == unio->set[j]) {
-                duplicate = 1;
-                break;
-            }
-        }
-        if (duplicate == 0) {
-            unio->set[k2] = set2->set[i];
+    while (j < set2->n) {
+        if (k2 == 0 || unio->set[k2 - 1] != set2->set[j]) {
+            unio->set[k2] = set2->set[j];
             k2++;
         }
+        j++;
     }
     unio->n = k2;
     return unio;
 }
 
-void add_elem(MNOZINA* set1, MNOZINA* set2/*, MNOZINA** intersec, MNOZINA** unio*/) {
-    int n1, n2, i, t=1; //priradenie noveho prvku
-    MNOZINA* copySet1 = copy_arr(set1);
-    if (copySet1 == NULL)
-        return 0;
-    MNOZINA* copySet2 = copy_arr(set2);
-    if (copySet2 == NULL)
-        return 0;
+
+void add_elem(MNOZINA* set1, MNOZINA* set2) {
+    int n1, n2;
     printf("\nEnter a new element for first and for second array in row: ");
     scanf("%i %i", &n1, &n2);
+
+    if (contains(set1, n1) || contains(set2, n2)) {
+        printf("The element already exists in the arrays.\n");
+        return;
+    }
+
     set1->n++;
     set2->n++;
-    free(set1->set);
-    free(set2->set);
-    set1->set = (int*)malloc(set1->n * sizeof(int));
-    set2->set = (int*)malloc(set1->n * sizeof(int));
-    for (i = 0; i < set1->n; i++) {
-        if (i == set1->n - 1) {
-            set1->set[i] = n1;
-            set2->set[i] = n2;
-            break;
-        }
-        set1->set[i] = copySet1->set[i];
-        set2->set[i] = copySet2->set[i];
-    }
-    free_array(copySet1);
-    free_array(copySet2);
+    set1->set = (int*)realloc(set1->set, set1->n * sizeof(int));
+    set2->set = (int*)realloc(set2->set, set2->n * sizeof(int));
+
+    set1->set[set1->n - 1] = n1;
+    set2->set[set2->n - 1] = n2;
+
     printf("Arrays have size %i now\n", set1->n);
-   // *intersec = intersection(set1, set2);
-   // *unio = unions(set1, set2);
 }
 
 void dec_array(MNOZINA* set1, MNOZINA* set2) {
-    int dec, i;
-    printf("How much you want to reduce the arrays? -> ");
+    int dec;
+    printf("How much do you want to reduce the arrays? -> ");
     scanf("%i", &dec);
+
     if (set1->n < dec) {
-        printf("Your arrays have size %i, you cant decrease for this value!\n", set1->n);
-        return 0;
+        printf("You can't decrease the arrays by this value. They have size %i.\n", set1->n);
+        return;
     }
-    set1->n = set1->n - dec;
-    set2->n = set2->n - dec;
-    MNOZINA* copy1 = copy_arr(set1);
-    MNOZINA* copy2 = copy_arr(set2);
-    free(set1->set);
-    free(set2->set);
-    set1->set = (int*)malloc(set1->n * sizeof(int));
-    set2->set = (int*)malloc(set2->n * sizeof(int));
-    for (i = 0; i < set1->n; i++) {
-        set1->set[i] = copy1->set[i];
-        set2->set[i] = copy2->set[i];
-    }
+
+    set1->n -= dec;
+    set2->n -= dec;
+
+    set1->set = (int*)realloc(set1->set, set1->n * sizeof(int));
+    set2->set = (int*)realloc(set2->set, set2->n * sizeof(int));
+
     printf("Arrays have size %i now\n", set1->n);
-    free_array(copy1);
-    free_array(copy2);
 }
 
 void nastav(MNOZINA* a) { //nastavenie mnozin
@@ -214,8 +201,9 @@ void quicksort(int* arr, int low, int high) {
 int partition(int* arr, int low, int high) {
     int pivot = arr[high];
     int i = low - 1;
+    int j;
 
-    for (int j = low; j <= high - 1; j++) {
+    for (j = low; j <= high - 1; j++) {
         if (arr[j] <= pivot) {
             i++;
             swap(&arr[i], &arr[j]);
@@ -279,31 +267,24 @@ int main() {
 
     nastav(set1);
     nastav(set2);
-
     sort(set1, set2);
     print_arr(set1, set2);
-
     MNOZINA* intersec = intersection(set1, set2);
     MNOZINA* unio = unions(set1, set2);
-
     print(intersec, unio);
 
     add_elem(set1, set2);
-
+    sort(set1, set2);
     intersec = intersection(set1, set2);
     unio = unions(set1, set2);
-
     print_arr(set1, set2);
-
     print(intersec, unio);
 
     dec_array(set1, set2);
-
+    sort(set1, set2);
     intersec = intersection(set1, set2);
     unio = unions(set1, set2);
-
     print_arr(set1, set2);
-
     print(intersec, unio);
 
     free_array(set1);
