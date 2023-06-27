@@ -1,19 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#define OUT_OF_MEMORY 'a'
+#define TOO_BIG_DECREASE 'b' 
 
 typedef struct {
     int* set;
     unsigned int n;
 } MNOZINA;
-
-
-MNOZINA* constructor() {
-    MNOZINA* arr = (MNOZINA*)malloc(sizeof(MNOZINA));
-    arr->set = NULL;
-    arr->n = 0;
-    return(arr);
-}
 
 void free_array(MNOZINA* arr)
 {
@@ -21,23 +15,20 @@ void free_array(MNOZINA* arr)
     free(arr);
 }
 
-//int same_n_add(MNOZINA* intersec, MNOZINA* unio, int n) {    //F-cia pozarania na prvky, ak dame n do prvej a druhej mnoziny
-//    //printf("im here ;(\n");
-//    int i = 0, t = 0;
-//    for (i = 0; i < intersec->n; i++) {
-//        if (intersec->set[i] == n) { t = 1; break; }
-//    }
-//    if (t == 0) { intersec->set[intersec->n] = n; intersec->n++; }
-//    t = 0;
-//    for (i = 0; i < unio->n; i++) {
-//        if (unio->set[i] == n) { t = 1; break; }
-//    }
-//    if (t == 0) { unio->set[unio->n] = n; unio->n++; }
-//    return t;
-//}
+MNOZINA* constructor() {
+    MNOZINA* arr = (MNOZINA*)malloc(sizeof(MNOZINA));
+    if (arr == NULL)
+    {
+        free_array(arr);
+        return NULL;
+    }
+    arr->set = NULL;
+    arr->n = 0;
+    return(arr);
+}
 
 int contains(MNOZINA* set, int element) {
-	int i;
+    int i;
     for (i = 0; i < set->n; i++) {
         if (set->set[i] == element) {
             return 1;  // Cislo nebolo najdene
@@ -46,18 +37,17 @@ int contains(MNOZINA* set, int element) {
     return 0;  // Cislo nebolo najdene
 }
 
-MNOZINA* intersection(MNOZINA* set1, MNOZINA* set2) {  //algoritmus zlucenia pre prienik
-    MNOZINA* intersec = constructor();
-    if (intersec == NULL) {
-        return NULL;
-    }
-    intersec->set = (int*)malloc(set1->n * sizeof(int));
-    if (intersec->set == NULL) {
-        free_array(intersec);
-        return NULL;
-    }
+int intersection(MNOZINA* intersec,MNOZINA* set1, MNOZINA* set2) {  //algoritmus zlucenia pre prienik
     int k1 = 0;
     int i = 0, j = 0;
+
+    intersec->set = (int*)malloc(set1->n * sizeof(int));
+    if (intersec->set == NULL) {
+        free_array(set1);
+        free_array(set2);
+        free_array(intersec);
+        return OUT_OF_MEMORY;
+    }
     while (i < set1->n && j < set2->n) {
         if (set1->set[i] < set2->set[j]) {
             i++;
@@ -75,20 +65,20 @@ MNOZINA* intersection(MNOZINA* set1, MNOZINA* set2) {  //algoritmus zlucenia pre
         }
     }
     intersec->n = k1;
-    return intersec;
+    return 0;
 }
-MNOZINA* unions(MNOZINA* set1, MNOZINA* set2) { //algoritmus zlucenia pre zjednotenie
-    MNOZINA* unio = constructor();
-    if (unio == NULL) {
-        return NULL;
-    }
+
+int unions(MNOZINA* unio, MNOZINA* set1, MNOZINA* set2) { //algoritmus zlucenia pre zjednotenie
+    int k2 = 0;
+    int i = 0, j = 0;
+
     unio->set = (int*)malloc((set1->n + set2->n) * sizeof(int));
     if (unio->set == NULL) {
         free_array(unio);
-        return NULL;
+        free_array(set1);
+        free_array(set2);
+        return OUT_OF_MEMORY;
     }
-    int k2 = 0;
-    int i = 0, j = 0;
     while (i < set1->n && j < set2->n) {
         if (set1->set[i] < set2->set[j]) {
             if (k2 == 0 || unio->set[k2 - 1] != set1->set[i]) {
@@ -128,56 +118,79 @@ MNOZINA* unions(MNOZINA* set1, MNOZINA* set2) { //algoritmus zlucenia pre zjedno
         j++;
     }
     unio->n = k2;
-    return unio;
+    return 0;
 }
 
-
-void add_elem(MNOZINA* set1, MNOZINA* set2) {
+int add_elem(MNOZINA* set1, MNOZINA* set2) {
     int n1, n2;
     printf("\nEnter a new element for first and for second array in row: ");
     scanf("%i %i", &n1, &n2);
 
-    if (contains(set1, n1) || contains(set2, n2)) {
-        printf("The element already exists in the arrays.\n");
-        return;
-    }
-
     set1->n++;
     set2->n++;
     set1->set = (int*)realloc(set1->set, set1->n * sizeof(int));
+    if(set1->set == NULL)
+    {
+        free_array(set1);
+        free_array(set2);
+        return OUT_OF_MEMORY;
+    }
     set2->set = (int*)realloc(set2->set, set2->n * sizeof(int));
+    if (set2->set == NULL)
+    {
+        free_array(set1);
+        free_array(set2);
+        return OUT_OF_MEMORY;
+    }
 
     set1->set[set1->n - 1] = n1;
     set2->set[set2->n - 1] = n2;
-
-    printf("Arrays have size %i now\n", set1->n);
+    return 0;
 }
 
-void dec_array(MNOZINA* set1, MNOZINA* set2) {
+int dec_array(MNOZINA* set1, MNOZINA* set2) {
     int dec;
     printf("How much do you want to reduce the arrays? -> ");
     scanf("%i", &dec);
 
     if (set1->n < dec) {
-        printf("You can't decrease the arrays by this value. They have size %i.\n", set1->n);
-        return;
+        free_array(set1);
+        free_array(set2);
+        return TOO_BIG_DECREASE;
     }
 
     set1->n -= dec;
     set2->n -= dec;
 
     set1->set = (int*)realloc(set1->set, set1->n * sizeof(int));
+    if (set1->set == NULL)
+    {
+        free_array(set1);
+        free_array(set2);
+        return OUT_OF_MEMORY;
+    }
     set2->set = (int*)realloc(set2->set, set2->n * sizeof(int));
-
-    printf("Arrays have size %i now\n", set1->n);
+    if (set2->set == NULL)
+    {
+        free_array(set1);
+        free_array(set2);
+        return OUT_OF_MEMORY;
+    }
+    return 0;
 }
 
-void nastav(MNOZINA* a) { //nastavenie mnozin
+int nastav(MNOZINA* a) { //nastavenie mnozin
     int i;
     a->set = (int*)malloc(a->n * sizeof(int));
+    if (a->set == NULL)
+    {
+        free_array(a);
+        return OUT_OF_MEMORY;
+    }
     for (i = 0; i < a->n; i++) {
         a->set[i] = rand() % 10;
     }
+    return 0;
 }
 
 void quicksort(int* arr, int low, int high); //quick sort funkcia
@@ -219,7 +232,6 @@ void swap(int* a, int* b) {
     *b = temp;
 }
 
-
 void print(MNOZINA* intersec, MNOZINA* unio) {
     int i, j;
     printf("Intersection: "); //vystup intersection
@@ -227,7 +239,6 @@ void print(MNOZINA* intersec, MNOZINA* unio) {
         printf("%d ", intersec->set[i]);
     }
     printf("\n");
-
     printf("Union: ");  //vystup union
     for (i = 0; i < unio->n; i++) {
         printf("%d ", unio->set[i]);
@@ -250,40 +261,104 @@ void print_arr(MNOZINA* set1, MNOZINA* set2) {
     printf("\n");
 }
 
+int err(int a)
+{
+    switch(a)
+    {
+    case OUT_OF_MEMORY:
+        printf("Error: Failed to allocate memory\n");
+        return 0;
+    case TOO_BIG_DECREASE:
+        printf("Error: It is not possible to reduce the array to such a number\n");
+        return 0;
+    }
+    return 1;
+}
+
 int main() {
     srand(time(0));
-    int n, i, k = 1;
+    int n, i, k = 1, chyba, error;
     MNOZINA* set1 = constructor();
     if (set1 == NULL)
+    {
+        printf("Error: Failed to allocate memory\n");
         return -1;
+    }
     MNOZINA* set2 = constructor();
     if (set2 == NULL)
+    {
+        printf("Error: Failed to allocate memory\n");
         return -1;
-    constructor();
+    }
+    MNOZINA* intersec = constructor();
+    if (intersec == NULL)
+    {
+        printf("Error: Failed to allocate memory\n");
+        return -1;
+    }
+    MNOZINA* unio = constructor();
+    if (unio == NULL)
+    {
+        printf("Error: Failed to allocate memory\n");
+        return -1;
+    }
     printf("Enter the size of 2 arrays -> ");
     scanf("%i", &n);
     set1->n = n;
     set2->n = n;
 
-    nastav(set1);
-    nastav(set2);
+    chyba = nastav(set1);
+    chyba = err(chyba);
+    if (chyba == 0) return -1;
+
+    chyba = nastav(set2);
+    chyba = err(chyba);
+    if (chyba == 0) return -1;
+
     sort(set1, set2);
     print_arr(set1, set2);
-    MNOZINA* intersec = intersection(set1, set2);
-    MNOZINA* unio = unions(set1, set2);
+
+    intersection(intersec, set1, set2);
+    chyba = err(chyba);
+    if (chyba == 0) return -1;
+
+    unions(unio, set1, set2);
+    chyba = err(chyba);
+    if (chyba == 0) return -1;
+
     print(intersec, unio);
 
-    add_elem(set1, set2);
+    chyba = add_elem(set1, set2);
+    chyba = err(chyba);
+    if (chyba == 0) return -1;
+
+    printf("Arrays have size %i now\n", set1->n);
     sort(set1, set2);
-    intersec = intersection(set1, set2);
-    unio = unions(set1, set2);
+    intersection(intersec, set1, set2);
+    chyba = err(chyba);
+    if (chyba == 0) return -1;
+
+    unions(unio, set1, set2);
+    chyba = err(chyba);
+    if (chyba == 0) return -1;
+
     print_arr(set1, set2);
     print(intersec, unio);
 
-    dec_array(set1, set2);
+    chyba = dec_array(set1, set2);
+    chyba = err(chyba);
+    if (chyba == 0) return -1;
+
+    printf("Arrays have size %i now\n", set1->n);
     sort(set1, set2);
-    intersec = intersection(set1, set2);
-    unio = unions(set1, set2);
+    chyba = intersection(intersec, set1, set2);
+    chyba = err(chyba);
+    if (chyba == 0) return -1;
+
+    chyba = unions(unio, set1, set2);
+    chyba = err(chyba);
+    if (chyba == 0) return -1;
+
     print_arr(set1, set2);
     print(intersec, unio);
 
