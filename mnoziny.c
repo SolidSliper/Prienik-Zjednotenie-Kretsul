@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#define OUT_OF_MEMORY "Error: Failed to allocate memory"
-#define TOO_BIG_DECREASE "Too big decrease!"
+#define OUT_OF_MEMORY -1
+#define TOO_BIG_DECREASE -2
+#define ERROR_EXISTS 1
+#define ERROR_DOESNT_EXISTS 0
 
 typedef struct {
     int* set;
@@ -19,7 +21,6 @@ MNOZINA* constructor() {
     MNOZINA* arr = (MNOZINA*)malloc(sizeof(MNOZINA));
     if (arr == NULL)
     {
-        free_array(arr);
         return NULL;
     }
     arr->set = NULL;
@@ -27,25 +28,13 @@ MNOZINA* constructor() {
     return(arr);
 }
 
-int contains(MNOZINA* set, int element) {
-    int i;
-    for (i = 0; i < set->n; i++) {
-        if (set->set[i] == element) {
-            return 1;  // Cislo nebolo najdene
-        }
-    }
-    return 0;  // Cislo nebolo najdene
-}
-
-const char* intersection(MNOZINA* intersec, MNOZINA* set1, MNOZINA* set2) {  //algoritmus zlucenia pre prienik
+int intersection(MNOZINA* intersec, MNOZINA* set1, MNOZINA* set2) {  //algoritmus zlucenia pre prienik
     int k1 = 0;
     int i = 0, j = 0;
 
     intersec->set = (int*)malloc(set1->n * sizeof(int));
-    if (intersec->set == NULL) {
-        free_array(set1);
-        free_array(set2);
-        free_array(intersec);
+    if (intersec->set == NULL)
+    {
         return OUT_OF_MEMORY;
     }
     while (i < set1->n && j < set2->n) {
@@ -68,15 +57,13 @@ const char* intersection(MNOZINA* intersec, MNOZINA* set1, MNOZINA* set2) {  //a
     return 0;
 }
 
-const char* unions(MNOZINA* unio, MNOZINA* set1, MNOZINA* set2) { //algoritmus zlucenia pre zjednotenie
+int unions(MNOZINA* unio, MNOZINA* set1, MNOZINA* set2) { //algoritmus zlucenia pre zjednotenie
     int k2 = 0;
     int i = 0, j = 0;
 
     unio->set = (int*)malloc((set1->n + set2->n) * sizeof(int));
-    if (unio->set == NULL) {
-        free_array(unio);
-        free_array(set1);
-        free_array(set2);
+    if (unio->set == NULL) 
+    {
         return OUT_OF_MEMORY;
     }
     while (i < set1->n && j < set2->n) {
@@ -121,7 +108,7 @@ const char* unions(MNOZINA* unio, MNOZINA* set1, MNOZINA* set2) { //algoritmus z
     return 0;
 }
 
-const char* add_elem(MNOZINA* set1, MNOZINA* set2) {
+int add_elem(MNOZINA* set1, MNOZINA* set2) {
     int n1, n2;
     printf("\nEnter a new element for first and for second array in row: ");
     scanf("%i %i", &n1, &n2);
@@ -131,15 +118,11 @@ const char* add_elem(MNOZINA* set1, MNOZINA* set2) {
     set1->set = (int*)realloc(set1->set, set1->n * sizeof(int));
     if (set1->set == NULL)
     {
-        free_array(set1);
-        free_array(set2);
         return OUT_OF_MEMORY;
     }
     set2->set = (int*)realloc(set2->set, set2->n * sizeof(int));
     if (set2->set == NULL)
     {
-        free_array(set1);
-        free_array(set2);
         return OUT_OF_MEMORY;
     }
 
@@ -148,14 +131,12 @@ const char* add_elem(MNOZINA* set1, MNOZINA* set2) {
     return 0;
 }
 
-const char* dec_array(MNOZINA* set1, MNOZINA* set2) {
+int dec_array(MNOZINA* set1, MNOZINA* set2) {
     int dec;
     printf("How much do you want to reduce the arrays? -> ");
     scanf("%i", &dec);
 
     if (set1->n < dec) {
-        free_array(set1);
-        free_array(set2);
         return TOO_BIG_DECREASE;
     }
 
@@ -165,21 +146,17 @@ const char* dec_array(MNOZINA* set1, MNOZINA* set2) {
     set1->set = (int*)realloc(set1->set, set1->n * sizeof(int));
     if (set1->set == NULL)
     {
-        free_array(set1);
-        free_array(set2);
         return OUT_OF_MEMORY;
     }
     set2->set = (int*)realloc(set2->set, set2->n * sizeof(int));
     if (set2->set == NULL)
     {
-        free_array(set1);
-        free_array(set2);
         return OUT_OF_MEMORY;
     }
     return 0;
 }
 
-const char* nastav(MNOZINA* a) { //nastavenie mnozin
+int nastav(MNOZINA* a) { //nastavenie mnozin
     int i;
     a->set = (int*)malloc(a->n * sizeof(int));
     if (a->set == NULL)
@@ -261,10 +238,32 @@ void print_arr(MNOZINA* set1, MNOZINA* set2) {
     printf("\n");
 }
 
+int err(int a, MNOZINA* set1, MNOZINA* set2, MNOZINA* intersec, MNOZINA* unio)
+{
+    switch(a)
+    {
+    case OUT_OF_MEMORY:
+        printf("Error: Failed to allocate memory\n");
+        free_array(set1);
+        free_array(set2);
+        free_array(intersec);
+        free_array(unio);
+        return ERROR_EXISTS;
+    case TOO_BIG_DECREASE:
+        printf("Error: It is not possible to reduce the array to such a number\n");
+        free_array(set1);
+        free_array(set2);
+        free_array(intersec);
+        free_array(unio);
+        return ERROR_EXISTS;
+    }
+    return ERROR_DOESNT_EXISTS;
+}
+
 int main() {
     srand(time(0));
-    int n, i, k = 1, error;
-    const char* chyba;
+    int n, i, k = 1;
+    int chyba;
     MNOZINA* set1 = constructor();
     if (set1 == NULL)
     {
@@ -274,6 +273,7 @@ int main() {
     MNOZINA* set2 = constructor();
     if (set2 == NULL)
     {
+        free_array(set1);
         printf("Error: Failed to allocate memory\n");
         return -1;
     }
@@ -281,11 +281,16 @@ int main() {
     if (intersec == NULL)
     {
         printf("Error: Failed to allocate memory\n");
+        free_array(set1);
+        free_array(set2);
         return -1;
     }
     MNOZINA* unio = constructor();
     if (unio == NULL)
     {
+        free_array(set1);
+        free_array(set2);
+        free_array(intersec);
         printf("Error: Failed to allocate memory\n");
         return -1;
     }
@@ -295,91 +300,56 @@ int main() {
     set2->n = n;
 
     chyba = nastav(set1);
-    if (chyba == OUT_OF_MEMORY)
-    {
-        printf("%s\n", OUT_OF_MEMORY);
-        return -1;
-    }
+    chyba = err(chyba, set1, set2, intersec, unio);
+    if (chyba == ERROR_EXISTS) return -1;
 
     chyba = nastav(set2);
-    if (chyba == OUT_OF_MEMORY)
-    {
-        printf("%s\n", OUT_OF_MEMORY);
-        return -1;
-    }
+    chyba = err(chyba, set1, set2, intersec, unio);
+    if (chyba == ERROR_EXISTS) return -1;
 
     sort(set1, set2);
     print_arr(set1, set2);
 
-    intersection(intersec, set1, set2);
-    if (chyba == OUT_OF_MEMORY)
-    {
-        printf("%s\n", OUT_OF_MEMORY);
-        return -1;
-    }
+    chyba = intersection(intersec, set1, set2);
+    chyba = err(chyba, set1, set2, intersec, unio);
+    if (chyba == ERROR_EXISTS) return -1;
 
-    unions(unio, set1, set2);
-    if (chyba == OUT_OF_MEMORY)
-    {
-        printf("%s\n", OUT_OF_MEMORY);
-        return -1;
-    }
+    chyba = unions(unio, set1, set2);
+    chyba = err(chyba, set1, set2, intersec, unio);
+    if (chyba == ERROR_EXISTS) return -1;
 
     print(intersec, unio);
 
     chyba = add_elem(set1, set2);
-    if (chyba == OUT_OF_MEMORY)
-    {
-        printf("%s\n", OUT_OF_MEMORY);
-        return -1;
-    }
+    chyba = err(chyba, set1, set2, intersec, unio);
+    if (chyba == ERROR_EXISTS) return -1;
 
     printf("Arrays have size %i now\n", set1->n);
     sort(set1, set2);
-    intersection(intersec, set1, set2);
-    if (chyba == OUT_OF_MEMORY)
-    {
-        printf("%s\n", OUT_OF_MEMORY);
-        return -1;
-    }
+    chyba = intersection(intersec, set1, set2);
+    chyba = err(chyba, set1, set2, intersec, unio);
+    if (chyba == ERROR_EXISTS) return -1;
 
-    unions(unio, set1, set2);
-    if (chyba == OUT_OF_MEMORY)
-    {
-        printf("%s\n", OUT_OF_MEMORY);
-        return -1;
-    }
+    chyba = unions(unio, set1, set2);
+    chyba = err(chyba, set1, set2, intersec, unio);
+    if (chyba == ERROR_EXISTS) return -1;
 
     print_arr(set1, set2);
     print(intersec, unio);
 
     chyba = dec_array(set1, set2);
-    if (chyba == OUT_OF_MEMORY)
-    {
-        printf("%s\n", OUT_OF_MEMORY);
-        return -1;
-    }
-    if (chyba == TOO_BIG_DECREASE)
-    {
-        printf("%s\n", TOO_BIG_DECREASE);
-        return -1;
-    }
+    chyba = err(chyba, set1, set2, intersec, unio);
+    if (chyba == ERROR_EXISTS) return -1;
 
     printf("Arrays have size %i now\n", set1->n);
     sort(set1, set2);
     chyba = intersection(intersec, set1, set2);
-    if (chyba == OUT_OF_MEMORY)
-    {
-        printf("%s\n", OUT_OF_MEMORY);
-        return -1;
-    }
+    chyba = err(chyba, set1, set2, intersec, unio);
+    if (chyba == ERROR_EXISTS) return -1;
 
     chyba = unions(unio, set1, set2);
-    if (chyba == OUT_OF_MEMORY)
-    {
-        printf("%s\n", OUT_OF_MEMORY);
-        return -1;
-    };
+    chyba = err(chyba, set1, set2, intersec, unio);
+    if (chyba == ERROR_EXISTS) return -1;
 
     print_arr(set1, set2);
     print(intersec, unio);
