@@ -284,7 +284,10 @@ int main() {
         }
     chyba = nastav(set1);
     chyba = err(chyba, set1, set2, intersec, unio);
-    if (chyba == ERROR_EXISTS) return -1;
+    if (chyba == ERROR_EXISTS) {
+        printf("Error: Failed to allocate memory\n");
+        return -1;
+    }
 
     set2->set = (int*)malloc((set2)->n * sizeof(int));
     if (set2->set == NULL)
@@ -298,7 +301,10 @@ int main() {
     }
     chyba = nastav(set2);
     chyba = err(chyba, set1, set2, intersec, unio);
-    if (chyba == ERROR_EXISTS) { printf("Error: Failed to allocate memory\n"); return -1; }
+    if (chyba == ERROR_EXISTS) {
+        printf("Error: Failed to allocate memory\n");
+        return -1;
+    }
 
     sort(set1, set2);
     printf("First array: ");
@@ -309,16 +315,28 @@ int main() {
     printf("\n");
 
     intersec->set = (int*)malloc(set1->n * sizeof(int));
-    if (intersec->set == NULL) { printf("Error: Failed to allocate memory\n"); return -1; }
+    if (chyba == ERROR_EXISTS) {
+        printf("Error: Failed to allocate memory\n");
+        return -1;
+    }
     chyba = intersection(intersec, set1, set2);
     chyba = err(chyba, set1, set2, intersec, unio);
-    if (chyba == ERROR_EXISTS) { printf("Error: Failed to allocate memory\n"); return -1; }
+    if (chyba == ERROR_EXISTS) {
+        printf("Error: Failed to allocate memory\n");
+        return -1;
+    }
 
     unio->set = (int*)malloc((set1->n + set2->n) * sizeof(int));
-    if (unio->set == NULL) { printf("Error: Failed to allocate memory\n"); return -1; }
+    if (chyba == ERROR_EXISTS) {
+        printf("Error: Failed to allocate memory\n");
+        return -1;
+    }
     chyba = unions(unio, set1, set2);
     chyba = err(chyba, set1, set2, intersec, unio);
-    if (chyba == ERROR_EXISTS) { printf("Error: Failed to allocate memory\n"); return -1; }
+    if (chyba == ERROR_EXISTS) {
+        printf("Error: Failed to allocate memory\n");
+        return -1;
+    }
 
     printf("Intersection: ");
     print_arr(intersec);
@@ -331,31 +349,52 @@ int main() {
     scanf("%i", &new_elem);
     set1->n++;
     set1->set = (int*)realloc(set1->set, set1->n * sizeof(int));
-    if (set1->set == NULL) { printf("Error: Failed to allocate memory\n"); return -1; }
+    if (chyba == ERROR_EXISTS) {
+        printf("Error: Failed to allocate memory\n");
+        return -1;
+    }
     chyba = add_elem(set1, new_elem);
     if (chyba == CONTAINS)
     {   
         set1->n--;
         set1->set = (int*)realloc(set1->set, set1->n * sizeof(int));
-        if (set1->set == NULL) { printf("Error: Failed to allocate memory\n"); return -1; }
+        if (chyba == ERROR_EXISTS) {
+            printf("Error: Failed to allocate memory\n");
+            return -1;
+        }
         printf("\nFirst array already cotains this digit\n");
     }
     chyba = err(chyba, set1, set2, intersec, unio);
-    if (chyba == ERROR_EXISTS) { printf("Error: Failed to allocate memory\n"); return -1; }
+    if (chyba == ERROR_EXISTS) {
+        printf("Error: Failed to allocate memory\n");
+        return -1;
+    }
 
     sort(set1, set2);
 
     intersec->set = (int*)malloc(set1->n * sizeof(int));
-    if (intersec->set == NULL) { printf("Error: Failed to allocate memory\n"); return -1; }
+    if (chyba == ERROR_EXISTS) {
+        printf("Error: Failed to allocate memory\n");
+        return -1;
+    }
     chyba = intersection(intersec, set1, set2);
     chyba = err(chyba, set1, set2, intersec, unio);
-    if (chyba == ERROR_EXISTS) { printf("Error: Failed to allocate memory\n"); return -1; }
+    if (chyba == ERROR_EXISTS) {
+        printf("Error: Failed to allocate memory\n");
+        return -1;
+    }
 
     unio->set = (int*)malloc((set1->n + set2->n) * sizeof(int));
-    if (unio->set == NULL) { printf("Error: Failed to allocate memory\n"); return -1; }
+    if (chyba == ERROR_EXISTS) {
+        printf("Error: Failed to allocate memory\n");
+        return -1;
+    }
     chyba = unions(unio, set1, set2);
     chyba = err(chyba, set1, set2, intersec, unio);
-    if (chyba == ERROR_EXISTS) { printf("Error: Failed to allocate memory\n"); return -1; }
+    if (chyba == ERROR_EXISTS) {
+        printf("Error: Failed to allocate memory\n");
+        return -1;
+    }
 
     printf("First array: ");
     print_arr(set1);
@@ -375,7 +414,10 @@ int main() {
     chyba = del_elem(set2, del);
     if (chyba == DOESNT_CONTAINS) printf("\nSecond array doesnt cotains this digit\n");
     chyba = err(chyba, set1, set2, intersec, unio);
-    if (chyba == ERROR_EXISTS) { printf("Error: Failed to allocate memory\n"); return -1; }
+    if (chyba == ERROR_EXISTS) {
+        printf("Error: Failed to allocate memory\n");
+        return -1;
+    }
     set2->n--;
     set2->set = (int*)realloc(set2->set, set2->n * sizeof(int));
     if (set2->set == NULL)  return OUT_OF_MEMORY;
@@ -386,13 +428,19 @@ int main() {
     if (intersec->set == NULL)  return OUT_OF_MEMORY;
     chyba = intersection(intersec, set1, set2);
     chyba = err(chyba, set1, set2, intersec, unio);
-    if (chyba == ERROR_EXISTS) { printf("Error: Failed to allocate memory\n"); return -1; }
+    if (chyba == ERROR_EXISTS) {
+        printf("Error: Failed to allocate memory\n");
+        return -1;
+    }
 
     unio->set = (int*)malloc((set1->n + set2->n) * sizeof(int));
     if (unio->set == NULL) return OUT_OF_MEMORY;
     chyba = unions(unio, set1, set2);
     chyba = err(chyba, set1, set2, intersec, unio);
-    if (chyba == ERROR_EXISTS) { printf("Error: Failed to allocate memory\n"); return -1; }
+    if (chyba == ERROR_EXISTS) { 
+        printf("Error: Failed to allocate memory\n"); 
+        return -1;
+    }
 
     printf("First array: ");
     print_arr(set1);
