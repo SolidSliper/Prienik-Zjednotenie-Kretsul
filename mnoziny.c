@@ -368,16 +368,9 @@ int main() {
     printf("\nEnter a new element for first array: ");
     scanf("%i", &new_elem);
     chyba = add_elem(set1, new_elem);
-    if (chyba == CONTAINS)
-    {   
-        set1->n--;
-        set1->set = (int*)realloc(set1->set, set1->n * sizeof(int));
-        if (chyba == ERROR_EXISTS) {
-            printf("Error: Failed to allocate memory\n");
-            return -1;
-        }
+    if (chyba == CONTAINS)  
         printf("\nFirst array already cotains this digit\n");
-    }
+    
     chyba = err(chyba, set1, set2, intersec, unio);
     if (chyba == ERROR_EXISTS) {
         printf("Error: Failed to allocate memory\n");
@@ -426,7 +419,8 @@ int main() {
     printf("\nWhich digit of 2nd array you want to delete? -> ");
     scanf("%i", &del);
     chyba = del_elem(set2, del);
-    if (chyba == DOESNT_CONTAINS) printf("\nSecond array doesnt cotains this digit\n");
+    if (chyba == DOESNT_CONTAINS) 
+        printf("\nSecond array doesnt cotains this digit\n");
     chyba = err(chyba, set1, set2, intersec, unio);
     if (chyba == ERROR_EXISTS) {
         printf("Error: Failed to allocate memory\n");
