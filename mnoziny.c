@@ -20,7 +20,8 @@ void free_array(MNOZINA* arr)
 
 MNOZINA* constructor() {
     MNOZINA* arr = (MNOZINA*)malloc(sizeof(MNOZINA));
-    if (arr == NULL) return NULL;
+    if (arr == NULL) 
+        return NULL;
     arr->set = NULL;
     arr->n = 0;
     return(arr);
@@ -29,9 +30,9 @@ MNOZINA* constructor() {
 int contains(MNOZINA* set, int element) {
     int i;
     for (i = 0; i < set->n; i++) {
-        if (set->set[i] == element) {
+        if (set->set[i] == element) 
             return CONTAINS;  // Cislo bolo najdene
-        }
+        
     }
     return DOESNT_CONTAINS;  // Cislo nebolo najdene
 }
@@ -41,7 +42,8 @@ int intersection(MNOZINA* intersec, MNOZINA* set1, MNOZINA* set2) {  //algoritmu
     int i = 0, j = 0;
 
     MNOZINA* copy = constructor();
-    if (copy == NULL) return OUT_OF_MEMORY;
+    if (copy == NULL) 
+        return OUT_OF_MEMORY;
 
     copy->set = (int*)malloc(set1->n * sizeof(int));
     if (copy->set == NULL) {
@@ -77,7 +79,8 @@ int unions(MNOZINA* unio, MNOZINA* set1, MNOZINA* set2) { //algoritmus zlucenia 
     int i = 0, j = 0;
 
     MNOZINA* copy = constructor();
-    if (copy == NULL) return OUT_OF_MEMORY;
+    if (copy == NULL) 
+        return OUT_OF_MEMORY;
 
     copy->set = (int*)malloc((set1->n + set2->n) * sizeof(int));
     if (copy->set == NULL) {
@@ -131,7 +134,14 @@ int unions(MNOZINA* unio, MNOZINA* set1, MNOZINA* set2) { //algoritmus zlucenia 
 
 int add_elem(MNOZINA* arr, int n) {
     int cont = contains(arr, n);
-    if (cont == CONTAINS) return CONTAINS;
+    if (cont == CONTAINS)
+        return CONTAINS;
+    arr->n++;
+    arr->set = (int*)realloc(arr->set, arr->n * sizeof(int));
+    if (arr->set == NULL) {
+        free_array(arr);
+        return OUT_OF_MEMORY;
+    }
     arr->set[arr->n - 1] = n;
     return 0;
 }
@@ -139,7 +149,8 @@ int add_elem(MNOZINA* arr, int n) {
 int del_elem(MNOZINA* arr, int ell) {
     int cont, i, index;
     cont = contains(arr, ell);
-    if (cont == DOESNT_CONTAINS) return DOESNT_CONTAINS;
+    if (cont == DOESNT_CONTAINS)
+        return DOESNT_CONTAINS;
 
     for (i = 0; i < arr->n; i++) {
         if (arr->set[i] == ell) {
@@ -150,14 +161,20 @@ int del_elem(MNOZINA* arr, int ell) {
     for (i = index; i < arr->n - 1; i++) {
         arr->set[i] = arr->set[i + 1];
     }
-
+    arr->n--;
+    arr->set = (int*)realloc(arr->set, arr->n * sizeof(int));
+    if (arr->set == NULL) {
+        free_array(arr);
+        return OUT_OF_MEMORY;
+    }
     return 0;
-}   
+}
 
 int nastav(MNOZINA* arr) { //nastavenie mnozin
     int i;
     MNOZINA* a = constructor();
-    if (a == NULL) return OUT_OF_MEMORY;
+    if (a == NULL)
+        return OUT_OF_MEMORY;
 
     a->set = (int*)malloc(arr->n * sizeof(int));
     if (a->set == NULL)
@@ -198,7 +215,8 @@ int partition(int* arr, int low, int high) {
     int j;
 
     for (j = low; j <= high - 1; j++) {
-        if (arr[j] <= pivot) {
+        if (arr[j] <= pivot) 
+        {
             i++;
             swap(&arr[i], &arr[j]);
         }
@@ -237,6 +255,7 @@ int err(int a, MNOZINA* set1, MNOZINA* set2, MNOZINA* intersec, MNOZINA* unio)
 int main() {
     srand(time(0));
     int n, i, k = 1, chyba, new_elem, del;
+
     MNOZINA* set1 = constructor();
     if (set1 == NULL)
     {
@@ -267,6 +286,7 @@ int main() {
         free_array(intersec);
         return -1;
     }
+
     printf("Enter the size of 2 arrays -> ");
     scanf("%i", &n);
     set1->n = n;
@@ -347,12 +367,6 @@ int main() {
 
     printf("\nEnter a new element for first array: ");
     scanf("%i", &new_elem);
-    set1->n++;
-    set1->set = (int*)realloc(set1->set, set1->n * sizeof(int));
-    if (chyba == ERROR_EXISTS) {
-        printf("Error: Failed to allocate memory\n");
-        return -1;
-    }
     chyba = add_elem(set1, new_elem);
     if (chyba == CONTAINS)
     {   
@@ -418,9 +432,6 @@ int main() {
         printf("Error: Failed to allocate memory\n");
         return -1;
     }
-    set2->n--;
-    set2->set = (int*)realloc(set2->set, set2->n * sizeof(int));
-    if (set2->set == NULL)  return OUT_OF_MEMORY;
 
     sort(set1, set2);
 
