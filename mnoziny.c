@@ -29,6 +29,7 @@ MNOZINA* constructor() {
 
 int contains(MNOZINA* set, int element) {
     int i;
+
     for (i = 0; i < set->n; i++) {
         if (set->set[i] == element) 
             return CONTAINS;  // Cislo bolo najdene
@@ -136,6 +137,7 @@ int add_elem(MNOZINA* arr, int n) {
     int cont = contains(arr, n);
     if (cont == CONTAINS)
         return CONTAINS;
+
     arr->n++;
     arr->set = (int*)realloc(arr->set, arr->n * sizeof(int));
     if (arr->set == NULL) {
@@ -148,6 +150,7 @@ int add_elem(MNOZINA* arr, int n) {
 
 int del_elem(MNOZINA* arr, int ell) {
     int cont, i, index;
+
     cont = contains(arr, ell);
     if (cont == DOESNT_CONTAINS)
         return DOESNT_CONTAINS;
@@ -172,6 +175,7 @@ int del_elem(MNOZINA* arr, int ell) {
 
 int nastav(MNOZINA* arr) { //nastavenie mnozin
     int i;
+
     MNOZINA* a = constructor();
     if (a == NULL)
         return OUT_OF_MEMORY;
@@ -202,6 +206,7 @@ void sort(MNOZINA* set1, MNOZINA* set2) {
 
 void quicksort(int* arr, int low, int high) {
     int sort_iterations = 0;
+
     if (low < high) {
         int pivot = partition(arr, low, high);
         quicksort(arr, low, pivot - 1);
@@ -233,6 +238,7 @@ void swap(int* a, int* b) {
 
 void print_arr(MNOZINA* arr) {
     int i;
+
     for (i = 0; i < arr->n; i++) {
         printf("%i ", arr->set[i]);
     }
